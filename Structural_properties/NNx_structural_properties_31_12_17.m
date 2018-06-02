@@ -1,19 +1,19 @@
-function [out]=NNx_structural_properties_31_12_17(in)
+function [out]=NNx_structural_properties_31_12_17(in,tidd)
 % function that calculates and returns structural properties of sequences 
 % in ... input sequences in cell array format
 % out ... output sturctures in cell array format 
+% tidd ... add predictions of tidd properties
 
-%tmp=fastaread(fasta);
-%[tmps,~]=size(tmp);
 tmps=length(in);
 x=length(in{1});
-NNx=cell(tmps,66);
+NNx=cell(tmps,60);
 load('NN_structural_properties.mat')
 load('NNN_structural_properties.mat')
 
 for i = 1:tmps
-    NNx{i,1}= in{i};%tmp(i).Sequence;
-    NNx{i,2}=nt2int(in{i}); %tmp(i).Sequence);
+    NNx{i,1} = in{i};%tmp(i).Sequence; % cell or fasta
+    NNx{i,2} = nt2int(in{i}); %tmp(i).Sequence);
+    NNx2 = NNx;
     
     for j=1:53 % size NN structural properties
         
@@ -47,7 +47,7 @@ for i = 1:tmps
   
         for k=1:x-2 % size of nnn
             l=1;
-            while (strcmp(NNNsp{l,1}(1:3),NNx{i,1}(k:k+2)) || strcmp(NNNsp{l,1}(5:7),NNx{i,1}(k:k+2))) == 0; %loop breaks when NNN is found
+            while (strcmp(NNNsp{l,1}(1:3),NNx{i,1}(k:k+2)) || strcmp(NNNsp{l,1}(5:7),NNx{i,1}(k:k+2))) == 0 %loop breaks when NNN is found
                 l=l+1;
             end
             NNx{i,2+53+j}(k) = NNNsp{l,1+j};
@@ -58,9 +58,11 @@ for i = 1:tmps
         
     end
     
+    if tidd==true
+        [NNx2{i,60}] = weka_run_NN_2_9_17(NNx{i,1}); %samo na prvem nukleotidu je napoved pri NN5, na ostalih mestih cirkularizirane napovedi
+        [~]=unix(['rm tmp.test count_tmp*']); % clean up files
+    end
 end
 
-
-
-out=NNx2(:,3:end);
+out=NNx2; %(:,3:end);
 end
